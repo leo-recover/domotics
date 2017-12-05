@@ -1,0 +1,43 @@
+SMART THERMOSTAT PCB
+TO-DO LIST
+
+Aggiornato al: 19/11/2014
+
+SCHEMATICO
+- Interfaccia ADC: --> OK
+- LED di debug e stato: --> OK
+- Creazione della parte relè panasonic bistabile: --> OK
+- Stadio Relè 3.3V (2x): --> OK
+- Sensore temperatura 1-wire: --> OK
+- Interfaccia USART / USB: --> OK
+- Test Points: --> OK
+- Jumpers (0ohm), in input per bypass MOS: --> OK
+- EEPROM esterna: --> OK
+- Esporre UART su header: --> OK
+- Power Flag: --> OK
+
+LAYOUT
+- Identificazione footprint mancanti: --> OK
+- Creazione footprint mancanti: --> OK
+- Impostazione regole di layout: --> OK
+- Sbroglio: --> OK
+- Sistemare e controllare pad e fori: --> OK
+- Sistemazione serigrafia (aggiungere layout modulo radio);
+- DRC;
+- Produzione gerber;
+- Stampa layer;
+
+PRODUZIONE
+- Ordinazione componenti: --> OK
+- Verifica componenti su stampa layer; --> OK
+- Invio in produzione (PCBProto); --> OK
+- Assemblaggio; --> OK
+- Test; --> NOK. Vedi BUGS
+
+BUGS
+- CRITICO --> Serigrafia footprint DS18B20 invertita! Può comportare inversione di polarità su PCB. --> FIXED
+- CRITICO --> Pinout FT231X completamente sbagliato. Rifare simbolo in libreria, e layout di conseguenza. --> FIXED
+- MEDIO --> Footprint FT231X con passo leggermente sbagliato (detto da Enzo). Non pregiudica il montaggio del componente.
+- CRITICO --> Schematico: pin shutdown di SP6641 deve essere connesso a VBATT e non lasciato float. Se lasciato a float il regolatore non si accende, e Vout = Vin. --> FIXED
+- BASSO --> Sistemare serigrafia connettore alimentazione. Le polarità vengono coperte dal connettore.
+- BASSO --> Sistemare serigrafia connettore relè. I nomi dei pin sono coperti dal connettore.

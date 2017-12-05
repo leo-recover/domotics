@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0  Date: 08/10/2014 13:28:42
+#
+$CMP IRF7410
+D Power MOSFET, p-channel VDS = -12V, IDS = -10A, VGS = 8V, VGSTH = -0.9V
+K HEXFET pMOS 
+F http://www.irf.com/product-info/datasheets/data/irf7410gpbf.pdf
+$ENDCMP
+#
+#End Doc Library

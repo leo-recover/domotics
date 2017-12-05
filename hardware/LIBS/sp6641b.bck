@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0  Date: 08/10/2014 15:23:07
+#
+$CMP SP6641B
+D Boost Converter - VIN 0.5V to 4.5V, VOUT = 3.3V, IOUT = 500mA
+K DCDC BOOST STEP-UP
+F http://www.exar.com/common/content/document.ashx?id=20805
+$ENDCMP
+#
+#End Doc Library

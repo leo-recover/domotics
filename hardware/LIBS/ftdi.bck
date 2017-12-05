@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0  Date: 21/11/2014 17:17:18
+#
+$CMP FT231XS
+D USB to serial converter
+K USB RS232
+F http://www.ftdichip.com/Support/Documents/DataSheets/ICs/DS_FT231X.pdf
+$ENDCMP
+#
+#End Doc Library

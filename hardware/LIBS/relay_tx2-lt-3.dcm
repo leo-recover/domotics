@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0  Date: 09/10/2014 17:14:37
+#
+$CMP RELAY_TX2-LT-3
+D Relay 3VDC 2A 2-coil latching
+K RELAY
+F https://www3.panasonic.biz/ac/e_download/control/relay/signal/catalog/mech_eng_tx.pdf
+$ENDCMP
+#
+#End Doc Library

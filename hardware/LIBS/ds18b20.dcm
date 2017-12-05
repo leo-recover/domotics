@@ -1,0 +1,8 @@
+EESchema-DOCLIB  Version 2.0  Date: 13/10/2014 15:02:51
+#
+$CMP DS18B20
+D DS18B20 1-Wire 12bit Temperature Sensor
+K SENSOR TEMPERATURE 1-WIRE
+$ENDCMP
+#
+#End Doc Library
