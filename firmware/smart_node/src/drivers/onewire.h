@@ -9,15 +9,14 @@
 #ifndef OW_H_
 #define OW_H_
 
-#include <util/delay_basic.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
 void OWtickDelay (uint16_t tick);
 void OWSetSpeed(uint8_t standard);
-uint8_t OWTouchReset(void);
-void OWWriteBit(uint8_t bit);
-uint8_t OWReadBit(void);
+uint8_t Onewire__DetectPresence(void);
+void Onewire__WriteBit(uint8_t bit);
+uint8_t Onewire__ReadBit(void);
 void OWWriteByte(uint8_t data);
 uint8_t OWReadByte(void);
 /*

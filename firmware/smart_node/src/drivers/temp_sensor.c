@@ -19,7 +19,7 @@ uint8_t TempSensor__Initialize(void)
 	uint8_t res;
 	OWSetSpeed(1);
 	// Send reset to initiate transaction
-	res = OWTouchReset();
+	res = Onewire__DetectPresence();
 	// SKIP_ROM Command to address the device
 	OWWriteByte(SKIP_ROM);
 	// WRITE_SCRATCHPAD to configure the device
@@ -41,7 +41,7 @@ uint8_t DSStartConversion(void)
 {
 	uint8_t res;
 	// Send reset to initiate transaction
-	res = OWTouchReset();
+	res = Onewire__DetectPresence();
 	// SKIP_ROM Command to address the device
 	OWWriteByte(SKIP_ROM);
 	// CONVERT_T Command to start the acquisition
@@ -65,19 +65,19 @@ uint16_t DSReadTemperature(uint8_t tries)
 	// Error: tries must be > 0!
 	if (tries == 0) return 1;
 	// Read time slot
-	while(!OWReadBit() && tries != 0)
+	while(!Onewire__ReadBit() && tries != 0)
 		tries--;
 	// The sensor is still converting. Exit with no result.
 	if (tries == 0) return 1;
 	
 	// Catch the value
-	OWTouchReset();
+	Onewire__DetectPresence();
 	OWWriteByte(SKIP_ROM);
 	OWWriteByte(READ_SCRATCHPAD);
 	// Read and store the scartchpad
 	for (uint8_t i = 0; i < 9; i++)
 		scratchpad[i] = OWReadByte();
-	OWTouchReset();
+	Onewire__DetectPresence();
 	// Extract temperature bytes and return
 	memcpy(&rawTemperature, scratchpad, 2);
 	return rawTemperature;
