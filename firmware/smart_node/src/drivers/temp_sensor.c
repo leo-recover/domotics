@@ -5,7 +5,7 @@
  * \author Leonardo Ricupero
  */ 
 
-#include "DS18B20.h"
+#include <temp_sensor.h>
 
 /**
  * \brief Initialize the DS18B20 sensor
@@ -14,7 +14,7 @@
  * 
  * \return uint8_t
  */
-uint8_t DSInit(void)
+uint8_t TempSensor__Initialize(void)
 {
 	uint8_t res;
 	OWSetSpeed(1);

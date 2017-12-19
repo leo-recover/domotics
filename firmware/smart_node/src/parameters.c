@@ -5,7 +5,7 @@
  * @author Leo
  */ 
 
-#include "configuration.h"
+#include <parameters.h>
 
 config_t config;
 

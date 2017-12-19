@@ -49,7 +49,7 @@ ISR(INT0_vect)
 	// Print data to console
 	for (int i = 0; i < 32; i++)
 	{
-		USARTTransmitChar(data[i]);
+		USART__TransmitChar(data[i]);
 	}
 	// Clear IRQ masks in STATUS register
 	RF24ResetIRQ();

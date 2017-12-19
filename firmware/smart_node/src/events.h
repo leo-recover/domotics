@@ -11,9 +11,9 @@
 
 #include <avr/io.h>
 #include <util/delay.h>
-#include "USART.h"
-#include "nRF24L01.h"
 #include <avr/interrupt.h>
+#include <radio.h>
+#include <usart.h>
 
 void INT0_interrupt_init(void);
 

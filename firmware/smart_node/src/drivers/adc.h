@@ -6,11 +6,11 @@
  */ 
 
 
-#ifndef AMPEROMETER_H_
-#define AMPEROMETER_H_
+#ifndef ADC_H_
+#define ADC_H_
 
 #include <avr/io.h>
 
 
 
-#endif /* AMPEROMETER_H_ */
+#endif /* ADC_H_ */

@@ -1,85 +1,11 @@
-/*
- * nRF24L01.c
+/**
+ * @file nRF24L01.c
  *
- * Created: 22/09/2014 18:30:05
- *  Author: Leo
+ * @date 22/09/2014 18:30:05
+ * @authors Stefan Engelke, Leonardo Ricupero
  */ 
 
-#include "nRF24L01.h"
-
-
-/**
- * \brief Read a register value from nRF24L01
- * 
- * \param reg
- * 
- * \return uint8_t
- */
-uint8_t RF24GetReg(uint8_t reg)
-{
-	_delay_us(10);
-	PORTB &= ~(1 << PORTB2);	// CSN low
-	_delay_us(10);
-	SPIWriteByte(R_REGISTER + reg);	// R_REGISTER = set the RF24 to reading mode, "reg" is the register that will be read back
-	_delay_us(10);
-	reg = SPIWriteByte(NOP);	// Send a NOP (dummy byte) in order to read the first byte of the register "reg"
-	_delay_us(10);
-	PORTB |= (1 << PORTB2); //CSN IR_High
-	return reg;	// Return the read register
-}
-
-/**
- * \brief Write to or Read from nRF24L01
- * 
- * \param ReadWrite		Specifies if we want to read ("R") or write ("W") to the register
- * \param reg			The register to read or write
- * \param val			array to read or write
- * \param nVal			size of the array
- * 
- * \return uint8_t *	array of bytes read
- */
-uint8_t *RF24ReadWrite(uint8_t ReadWrite, uint8_t reg, uint8_t *val, uint8_t nVal)
-{
-	cli();	//disable global interrupt
-	
-	//! If "W" we want to write to nRF24. No need to "R" mode because R=0x00
-	if (ReadWrite == W)	
-	{
-		reg = W_REGISTER + reg;	//ex: reg = EN_AA: 0b0010 0000 + 0b0000 0001 = 0b0010 0001
-	}
-	
-	//! A static uint8_t is needed to return an array
-	static uint8_t ret[DATA_LEN];
-	
-	//! Makes sure we wait a bit
-	_delay_us(10);
-	PORTB &= ~(1 << PORTB2);	// CSN low
-	_delay_us(10);
-	SPIWriteByte(reg);	// set to write or read mode the register "reg"
-	_delay_us(10);
-	
-	int i;
-	for(i=0; i < nVal; i++)
-	{
-		// We want to read a register
-		if (ReadWrite == R && reg != W_TX_PAYLOAD)
-		{
-			// Send dummy bytes to read the data
-			ret[i] = SPIWriteByte(NOP);	
-			_delay_us(10);
-		}
-		else
-		{
-			SPIWriteByte(val[i]);	
-			_delay_us(10);
-		}
-	}
-	PORTB |= (1 << PORTB2);	//CSN IR_High
-	
-	sei(); //enable global interrupt
-	
-	return ret;	
-}
+#include <radio.h>
 
 /**
  * \brief Setup the RF24 module
@@ -89,10 +15,8 @@ uint8_t *RF24ReadWrite(uint8_t ReadWrite, uint8_t reg, uint8_t *val, uint8_t nVa
  * 
  * \return void
  */
-void RF24Init(void)
+void Radio__Initialize(void)
 {
-	_delay_ms(100);	//allow radio to reach power down if shut down
-	
 	uint8_t val[5];
 	
 	// EN_AA - (enable auto-acknowledgments)
@@ -171,6 +95,81 @@ void RF24Init(void)
 	//device need 1.5ms to reach standby mode
 	_delay_ms(100);
 }
+
+/**
+ * \brief Read a register value from nRF24L01
+ *
+ * \param reg
+ *
+ * \return uint8_t
+ */
+uint8_t RF24GetReg(uint8_t reg)
+{
+	_delay_us(10);
+	PORTB &= ~(1 << PORTB2);	// CSN low
+	_delay_us(10);
+	SPIWriteByte(R_REGISTER + reg);	// R_REGISTER = set the RF24 to reading mode, "reg" is the register that will be read back
+	_delay_us(10);
+	reg = SPIWriteByte(NOP);	// Send a NOP (dummy byte) in order to read the first byte of the register "reg"
+	_delay_us(10);
+	PORTB |= (1 << PORTB2); //CSN IR_High
+	return reg;	// Return the read register
+}
+
+/**
+ * \brief Write to or Read from nRF24L01
+ *
+ * \param ReadWrite		Specifies if we want to read ("R") or write ("W") to the register
+ * \param reg			The register to read or write
+ * \param val			array to read or write
+ * \param nVal			size of the array
+ *
+ * \return uint8_t *	array of bytes read
+ */
+uint8_t *RF24ReadWrite(uint8_t ReadWrite, uint8_t reg, uint8_t *val, uint8_t nVal)
+{
+	cli();	//disable global interrupt
+
+	//! If "W" we want to write to nRF24. No need to "R" mode because R=0x00
+	if (ReadWrite == W)
+	{
+		reg = W_REGISTER + reg;	//ex: reg = EN_AA: 0b0010 0000 + 0b0000 0001 = 0b0010 0001
+	}
+
+	//! A static uint8_t is needed to return an array
+	static uint8_t ret[DATA_LEN];
+
+	//! Makes sure we wait a bit
+	_delay_us(10);
+	PORTB &= ~(1 << PORTB2);	// CSN low
+	_delay_us(10);
+	SPIWriteByte(reg);	// set to write or read mode the register "reg"
+	_delay_us(10);
+
+	int i;
+	for(i=0; i < nVal; i++)
+	{
+		// We want to read a register
+		if (ReadWrite == R && reg != W_TX_PAYLOAD)
+		{
+			// Send dummy bytes to read the data
+			ret[i] = SPIWriteByte(NOP);
+			_delay_us(10);
+		}
+		else
+		{
+			SPIWriteByte(val[i]);
+			_delay_us(10);
+		}
+	}
+	PORTB |= (1 << PORTB2);	//CSN IR_High
+
+	sei(); //enable global interrupt
+
+	return ret;
+}
+
+
 
 /**
  * \brief Transmit a data packet with the radio module

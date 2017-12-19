@@ -9,10 +9,12 @@
 #ifndef TIMER_H_
 #define TIMER_H_
 
-void timerInit(void);
-void timerGetCounter(void);
+extern uint16_t Timer_Counter;
 
+#define Timer__GetCounter() Timer_Counter
+#define Timer__ResetCounter() {Timer_Counter = 0;}
 
+void Timer__Initialize(void);
 
 
 #endif /* TIMER_H_ */

@@ -1,11 +1,11 @@
 /*
- * \file amperometer.c
+ * \file adc.c
  *
  * \date: 22/11/2014 19:28:36
  * \author: Leonardo Ricupero
  */ 
 
-#include "amperometer.h"
+#include <adc.h>
 
 /**
  * \brief Initializes the ADC

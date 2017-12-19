@@ -10,10 +10,22 @@
  * \author Leonardo Ricupero
  */ 
 
-#include "OW.h"
+#include <onewire.h>
 
 // 'tick' values
 int A,B,C,D,E,F,G,H,I,J;
+
+#define DELAY_A (6 * 4)
+#define DELAY_B (64 * 4)
+#define DELAY_C (60 * 4)
+#define DELAY_D (10 * 4)
+#define DELAY_E (9 * 4)
+#define DELAY_F (55 * 4)
+#define DELAY_G (0 * 4)
+#define DELAY_H (480 * 4)
+#define DELAY_I (70 * 4)
+#define DELAY_J (410 * 4)
+
 
 /**
  * \brief Delays a time multiple of 0.25us
@@ -22,7 +34,7 @@ int A,B,C,D,E,F,G,H,I,J;
  * 
  * \return void
  */
-void OWtickDelay (uint16_t tick)
+void OWtickDelay(uint16_t tick)
 {
 	// If we are at 16MHz then _delay_loop_2 (4 clock cycles) call delays of 0.25us
 	_delay_loop_2(tick);

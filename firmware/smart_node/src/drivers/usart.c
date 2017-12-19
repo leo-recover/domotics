@@ -5,7 +5,10 @@
  * \author: Leonardo Ricupero
  */ 
 
-#include "USART.h"
+#include <avr/io.h>
+#include <usart.h>
+
+#define BAUD_PRESCALE ((F_CPU / (16.0f * USART_BAUDRATE))UL -1)
 
 /**
  * \brief Initializes the USART
@@ -14,7 +17,7 @@
  *
  * \return void
  */
-void USARTInit(void)
+void Usart__Initialize(void)
 {
 	/*
 	//! Double speed to reduce error
@@ -41,7 +44,7 @@ void USARTInit(void)
  * 
  * \return void
  */
-void USARTTransmitChar(char c)
+void USART__TransmitChar(char c)
 {
 	//! Wait until the transmit buffer is ready
 	while ((UCSR0A & (1 << UDRE0)) == 0) {};

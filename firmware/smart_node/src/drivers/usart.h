@@ -9,12 +9,11 @@
 #ifndef USART_H_
 #define USART_H_
 
-#include "SMART_NODE.h"
+#include "micro.h"
 
-#define BAUDRATE 9600
-#define BAUD_PRESCALE ((F_CPU / (16 * BAUDRATE)) -1)
+#define USART_BAUDRATE 9600
 
-void USARTTransmitChar(char c);
-void USARTInit(void);
+void USART__TransmitChar(char c);
+void Usart__Initialize(void);
 
 #endif /* USART_H_ */

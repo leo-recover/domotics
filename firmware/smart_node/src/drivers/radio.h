@@ -35,8 +35,8 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <spi.h>
 #include <util/delay.h>
-#include "SPI.h"
 
 /* Memory Map */
 #define CONFIG      0x00
@@ -148,7 +148,7 @@
 
 uint8_t RF24GetReg(uint8_t reg);
 uint8_t *RF24ReadWrite(uint8_t ReadWrite, uint8_t reg, uint8_t *val, uint8_t nVal);
-void RF24Init(void);
+void Radio__Initialize(void);
 void RF24TransmitPayload(uint8_t *WBuff);
 void RF24ReceivePayload(void);
 void RF24ResetIRQ(void);

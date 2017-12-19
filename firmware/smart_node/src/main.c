@@ -14,8 +14,18 @@
  * \author: Leonardo Ricupero
  */ 
 
-#include "SMART_NODE.h"
-
+#include <avr/io.h>
+#include <util/delay.h>
+#include <avr/interrupt.h>
+#include <radio.h>
+#include <temp_sensor.h>
+#include <usart.h>
+#include "parameters.h"
+#include "spi.h"
+#include "events.h"
+#include "relays.h"
+#include "timer.h"
+#include "main.h"
 
 // temporary variable to store register
 uint8_t volatile reg;
@@ -32,15 +42,14 @@ int main(void)
 	/* Initialization routines */
 	relaysInit();
 	SPIInitMaster();
-	USARTInit();
+	Usart__Initialize();
 	INT0_interrupt_init();
-	RF24Init();
-	
-	DDRB |= (1 << DDB0);
-	
+	Radio__Initialize();
+	Timer__Initialize();
+
 	// Temperature sensor Diagnostics
 	// LED blink if the DS sensor is ready
-	if (DSInit() == 0)
+	if (TempSensor__Initialize() == 0)
 	{
 		for (uint8_t i = 0; i < 2; i++)
 		{
@@ -68,7 +77,7 @@ int main(void)
 	configLoadDefault();
 	
 	// Send STATUS to console -- DEBUG
-	USARTTransmitChar(RF24GetReg(FIFO_STATUS));
+	USART__TransmitChar(RF24GetReg(FIFO_STATUS));
 		
 	//! Main loop
 	while(1)
@@ -143,4 +152,17 @@ int main(void)
 			}
 		}
     }
+}
+
+/**
+ * Timer 0 compare match ISR
+ *
+ * This shall be triggered every 1 ms
+ */
+ISR(TIMER0_COMPA_vect)
+{
+	// Increment the base counter
+	Timer__GetCounter()++;
+
+	// Execute the tasks
 }

@@ -1,15 +1,15 @@
 /*
- * \file DS18B20.h
+ * \file temp_sensor.h
  *
  * \date 22/10/2014 20:50:57
  * \author Leonardo Ricupero
  */ 
 
 
-#ifndef DS18B20_H_
-#define DS18B20_H_
+#ifndef TEMP_SENSOR_H_
+#define TEMP_SENSOR_H_
 
-#include "OW.h"
+#include <onewire.h>
 #include <string.h>
 
 // ROM Commands
@@ -33,8 +33,8 @@
 #define RES_CONFIG			0x7F // 12 bit 0111 1111b	
 
 // Method prototypes
-uint8_t DSInit(void);
+uint8_t TempSensor__Initialize(void);
 uint16_t DSReadTemperature(uint8_t tries);
 uint8_t DSStartConversion(void);
 
-#endif /* DS18B20_H_ */
+#endif /* TEMP_SENSOR_H_ */

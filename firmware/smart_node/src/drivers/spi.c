@@ -5,7 +5,7 @@
  *  \author: Leonardo Ricupero
  */ 
 
-#include "SPI.h"
+#include "spi.h"
 
 /**
  * \brief Initialize SPI in master mode
