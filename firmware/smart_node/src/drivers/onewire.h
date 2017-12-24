@@ -1,8 +1,8 @@
-/*
- * \file OW.h
+/**
+ * @file onewire.h
  *
- * Created: 21/10/2014 13:19:47
- * \author Leonardo Ricupero
+ * @date 21/10/2014 13:19:47
+ * @author Leonardo Ricupero
  */ 
 
 
@@ -12,16 +12,26 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-void OWtickDelay (uint16_t tick);
-void OWSetSpeed(uint8_t standard);
-uint8_t Onewire__DetectPresence(void);
-void Onewire__WriteBit(uint8_t bit);
-uint8_t Onewire__ReadBit(void);
-void OWWriteByte(uint8_t data);
-uint8_t OWReadByte(void);
-/*
-uint8_t OWTouchByte(uint8_t data);
-void OWBlock(unsigned char *data, uint8_t data_len);
-uint8_t OWOverdriveSkip(unsigned char *data, uint8_t data_len);
-*/
+#define ONEWIRE_DRIVE_BUS_LOW() {DDRD |= (1 << DDD7); PORTD &= ~(1 << PORTD7);}
+#define ONEWIRE_RELEASE_BUS() {DDRD &= ~(1 << DDD7);}
+
+typedef enum {
+	ONEWIRE_BIT_0 = 0,
+	ONEWIRE_BIT_1 = 1,
+	ONEWIRE_PRESENCE_OK = 2,
+	ONEWIRE_PRESENCE_NOK = 3,
+	ONEWIRE_DATA_NOT_READY = 0xFF,
+} ONEWIRE_SAMPLE_T;
+
+extern ONEWIRE_SAMPLE_T Last_Sample;
+
+void Onewire__Initialize(void);
+void Onewire__StartDetectPresence(void);
+ONEWIRE_SAMPLE_T Onewire__GetPresence(void);
+void Onewire__StartWriteBit(uint8_t bit);
+void Onewire__StartReadBit(void);
+uint8_t Onewire__IsIdle(void);
+
+#define Onewire__GetLastSample() Last_Sample
+
 #endif /* OW_H_ */
