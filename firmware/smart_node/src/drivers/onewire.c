@@ -44,10 +44,13 @@ typedef enum {
 static void StartTimer(uint16_t delay);
 
 ONEWIRE_SAMPLE_T Last_Sample;
+uint8_t Byte_Read;
 
 static volatile ONEWIRE_STATE_T Onewire_State;
 static uint16_t Remaining_Delay;
-
+static uint8_t Byte_To_Write;
+static uint8_t Last_Byte;
+static uint8_t Remaining_Bits;
 
 void Onewire__Initialize(void)
 {
@@ -62,10 +65,15 @@ void Onewire__Initialize(void)
 
 	Onewire_State = ONEWIRE_IDLE;
 	Last_Sample = ONEWIRE_DATA_NOT_READY;
+	Last_Byte = ONEWIRE_DATA_NOT_READY;
+	Remaining_Bits = 0;
+	Remaining_Delay = 0;
+	Byte_To_Write = 0xFF;
+	Byte_Read = 0xFF;
 }
 
 
-void Onewire__StartDetectPresence(void)
+void Onewire__DetectPresence(void)
 {
 	Onewire_State = ONEWIRE_PRESENCE_DRIVE_LOW;
 	// Drives DQ low
@@ -89,7 +97,7 @@ ONEWIRE_SAMPLE_T Onewire__GetPresence(void)
 }
 
 
-void Onewire__StartWriteBit(uint8_t bit)
+void Onewire__WriteBit(uint8_t bit)
 {
 	cli();
 	if (bit)
@@ -117,6 +125,20 @@ void Onewire__StartReadBit(void)
 	sei();
 }
 
+void Onewire__WriteByte(uint8_t data)
+{
+	Byte_To_Write = data;
+	Remaining_Bits = 7;
+	Onewire__WriteBit(Byte_To_Write & 0x1);
+	Byte_To_Write = Byte_To_Write >> 1;
+}
+
+void Onewire__StartReadByte(void)
+{
+	Remaining_Bits = 7;
+	Onewire__StartReadBit();
+}
+
 
 uint8_t Onewire__IsIdle(void)
 {
@@ -128,22 +150,6 @@ uint8_t Onewire__IsIdle(void)
 	return result;
 }
 
-
-static void StartTimer(uint16_t delay)
-{
-	if (delay > 255)
-	{
-		Remaining_Delay = delay - 255;
-		OCR2A = 255;
-	}
-	else
-	{
-		Remaining_Delay = 0;
-		OCR2A = delay;
-	}
-	// Enable the counter
-	GTCCR &= ~(1 << TSM);
-}
 
 /**
  * Timer 2 compare match ISR
@@ -176,8 +182,7 @@ ISR(TIMER2_COMPA_vect)
 		}
 		case ONEWIRE_PRESENCE_SAMPLE:
 		{
-			// Sample for presence pulse from slave
-			Last_Sample = PIND & (1 << PIND7);
+			Last_Sample = ONEWIRE_SAMPLE_BUS();
 			Onewire_State = ONEWIRE_PRESENCE_RECOVERY;
 			StartTimer(DELAY_410_US);
 			break;
@@ -205,20 +210,48 @@ ISR(TIMER2_COMPA_vect)
 		}
 		case ONEWIRE_READBIT_SAMPLE:
 		{
-			// Sample for presence pulse from slave
-			Last_Sample = PIND & (1 << PIND7);
+			Last_Sample = ONEWIRE_SAMPLE_BUS();
+			if (Remaining_Bits != 0)
+			{
+				Byte_Read |= (Last_Sample << Remaining_Bits);
+			}
 			Onewire_State = ONEWIRE_READBIT_RECOVERY;
 			StartTimer(DELAY_55_US);
 			break;
 		}
 		case ONEWIRE_PRESENCE_RECOVERY:
-		case ONEWIRE_WRITE1_RECOVERY:
-		case ONEWIRE_WRITE0_RECOVERY:
-		case ONEWIRE_READBIT_RECOVERY:
 		{
 			if (Remaining_Delay != 0)
 			{
 				StartTimer(Remaining_Delay);
+			}
+			else
+			{
+				Onewire_State = ONEWIRE_IDLE;
+			}
+			break;
+		}
+		case ONEWIRE_WRITE1_RECOVERY:
+		case ONEWIRE_WRITE0_RECOVERY:
+		{
+			if (Remaining_Bits != 0)
+			{
+				Remaining_Bits--;
+				Onewire__WriteBit(Byte_To_Write & 0x1);
+				Byte_To_Write = Byte_To_Write >> 1;
+			}
+			else
+			{
+				Onewire_State = ONEWIRE_IDLE;
+			}
+			break;
+		}
+		case ONEWIRE_READBIT_RECOVERY:
+		{
+			if (Remaining_Bits != 0)
+			{
+				Remaining_Bits--;
+				Onewire__StartReadBit();
 			}
 			else
 			{
@@ -232,3 +265,20 @@ ISR(TIMER2_COMPA_vect)
 		}
 	}
 }
+
+static void StartTimer(uint16_t delay)
+{
+	if (delay > 255)
+	{
+		Remaining_Delay = delay - 255;
+		OCR2A = 255;
+	}
+	else
+	{
+		Remaining_Delay = 0;
+		OCR2A = delay;
+	}
+	// Enable the counter
+	GTCCR &= ~(1 << TSM);
+}
+
