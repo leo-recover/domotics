@@ -135,7 +135,7 @@ void Onewire__WriteByte(uint8_t data)
 
 void Onewire__StartReadByte(void)
 {
-	Remaining_Bits = 7;
+	Remaining_Bits = 8;
 	Onewire__StartReadBit();
 }
 
@@ -213,7 +213,7 @@ ISR(TIMER2_COMPA_vect)
 			Last_Sample = ONEWIRE_SAMPLE_BUS();
 			if (Remaining_Bits != 0)
 			{
-				Byte_Read |= (Last_Sample << Remaining_Bits);
+				Byte_Read |= (Last_Sample << (8 - Remaining_Bits));
 			}
 			Onewire_State = ONEWIRE_READBIT_RECOVERY;
 			StartTimer(DELAY_55_US);
