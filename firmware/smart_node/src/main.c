@@ -46,20 +46,8 @@ int main(void)
 	INT0_interrupt_init();
 	Radio__Initialize();
 	Timer__Initialize();
+	TempSensor__Initialize();
 
-	// Temperature sensor Diagnostics
-	// LED blink if the DS sensor is ready
-	if (TempSensor__Initialize() == 0)
-	{
-		for (uint8_t i = 0; i < 2; i++)
-		{
-			PORTB |= (1 << PB0);
-			_delay_ms(100);
-			PORTB &= ~(1 << PB0);
-			_delay_ms(100);
-		}
-	}
-    
 	// Radio Diagnostics
 	// LED blink if we read the correct STATUS
 	if (RF24GetReg(STATUS) == 0x0E)
@@ -86,11 +74,6 @@ int main(void)
 		RF24ReceivePayload();
 		RF24ResetIRQ();
 		
-		// Start acquisition of temperature
-		DSStartConversion();
-		_delay_ms(750);
-		// Try to read temperature
-		config.thermostat.state.tempRaw = DSReadTemperature(5);
 		// Temperature conversion
 		config.thermostat.state.tempSign = config.thermostat.state.tempRaw & (0x8000); // test sign (MSb)
 		if (config.thermostat.state.tempSign)
@@ -165,4 +148,5 @@ ISR(TIMER0_COMPA_vect)
 	Timer__GetCounter()++;
 
 	// Execute the tasks
+	TempSensor__Handler();
 }
