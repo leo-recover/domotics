@@ -9,57 +9,14 @@
 #ifndef RELAYS_H_
 #define RELAYS_H_
 
-#include <avr/io.h>
-#include <util/delay.h>
+typedef enum {
+	RELAY_0,
+	RELAY_1,
+} RELAY_T;
 
-void relaysInit(void);
-
-/**
- * \brief Puts the relay 0 in the set state
- * 
- * \return void
- */
-static inline void relay0Set(void)
-{
-	PORTD |= (1 << PD3);
-	_delay_ms(4);
-	PORTD &= ~(1 << PD3);
-}
-
-/**
- * \brief Puts the relay 1 in the set state
- * 
- * \return void
- */
-static inline void relay1Set(void)
-{
-	PORTD |= (1 << PD5);
-	_delay_ms(4);
-	PORTD &= ~(1 << PD5);
-}
-
-/**
- * \brief Puts the relay 0 in the reset state
- * 
- * \return void
- */
-static inline void relay0Reset(void)
-{
-	PORTD |= (1 << PD4);
-	_delay_ms(4);
-	PORTD &= ~(1 << PD4);
-}
-
-/**
- * \brief Puts the relay 1 in the reset state
- * 
- * \return void
- */
-static inline void relay1Reset(void)
-{
-	PORTD |= (1 << PD6);
-	_delay_ms(4);
-	PORTD &= ~(1 << PD6);
-}
+void Relays__Initialize(void);
+void Relays__Set(RELAY_T relay);
+void Relays__Reset(RELAY_T relay);
+void Relays__Handler(void);
 
 #endif /* RELAYS_H_ */
