@@ -32,6 +32,8 @@ void Onewire__DetectPresence(void);
 ONEWIRE_SAMPLE_T Onewire__GetPresence(void);
 void Onewire__WriteBit(uint8_t bit);
 void Onewire__StartReadBit(void);
+void Onewire__WriteByte(uint8_t data);
+void Onewire__StartReadByte(void);
 uint8_t Onewire__IsIdle(void);
 
 #define Onewire__GetLastSample() Last_Sample

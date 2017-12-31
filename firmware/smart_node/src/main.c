@@ -40,7 +40,7 @@ uint16_t temp100 = 0;
 int main(void)
 {
 	/* Initialization routines */
-	relaysInit();
+	Relays__Initialize();
 	SPIInitMaster();
 	Usart__Initialize();
 	INT0_interrupt_init();
@@ -97,7 +97,7 @@ int main(void)
 				if (config.thermostat.state.active == ON) {}
 				else
 				{
-					relay0Set();
+					//relay0Set();
 					config.thermostat.state.active = ON;
 				}
 			}
@@ -106,7 +106,7 @@ int main(void)
 				if (config.thermostat.state.active == OFF) {}
 				else
 				{
-					relay0Reset();
+					//relay0Reset();
 					config.thermostat.state.active = OFF;
 				}
 			}
@@ -120,7 +120,7 @@ int main(void)
 				if (config.thermostat.state.active == ON) {}
 				else
 				{
-					relay1Set();
+					//relay1Set();
 					config.thermostat.state.active = ON;
 				}
 			}
@@ -129,7 +129,7 @@ int main(void)
 				if (config.thermostat.state.active == OFF) {}
 				else
 				{
-					relay1Reset();
+					//relay1Reset();
 					config.thermostat.state.active = OFF;
 				}
 			}
@@ -142,11 +142,12 @@ int main(void)
  *
  * This shall be triggered every 1 ms
  */
-ISR(TIMER0_COMPA_vect)
+ISR(TIMER0_COMPA_vect, ISR_NOBLOCK)
 {
 	// Increment the base counter
 	Timer__GetCounter()++;
 
 	// Execute the tasks
 	TempSensor__Handler();
+	Relays__Handler();
 }

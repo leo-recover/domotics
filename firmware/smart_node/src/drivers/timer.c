@@ -15,6 +15,8 @@
 
 #if (TIMER_PRESCALER == 1)
 	#define TIMER_PRESC_SHIFT 0
+#elif (TIMER_PRESCALER == 8)
+	#define TIMER_PRESC_SHIFT 3
 #elif (TIMER_PRESCALER == 64)
 	#define TIMER_PRESC_SHIFT 6
 #elif (TIMER_PRESCALER == 256)
@@ -27,14 +29,18 @@
 
 uint16_t Timer_Counter;
 
-static uint16_t Timer_Frequency;
+static uint32_t Timer_Frequency;
 
 
 void Timer__Initialize(void)
 {
+	// Disable the timer for programming
+	GTCCR |= (1<<TSM | 1<< PSRSYNC);
 	// Clock source selection
 #if (TIMER_PRESCALER == 1)
 	TCCR0B |= (0  << CS02) | (0 << CS01) | (1 << CS00);
+#elif (TIMER_PRESCALER == 8)
+	TCCR0B |= (0  << CS02) | (1 << CS01) | (0 << CS00);
 #elif (TIMER_PRESCALER == 64)
 	TCCR0B |= (0  << CS02) | (1 << CS01) | (1 << CS00);
 #elif (TIMER_PRESCALER == 256)
@@ -56,4 +62,7 @@ void Timer__Initialize(void)
 
 	Timer_Frequency = Micro__GetClockFrequency() >> TIMER_PRESC_SHIFT;
 	Timer_Counter = 0;
+
+	// Enable the counter
+	GTCCR &= ~(1 << TSM);
 }
