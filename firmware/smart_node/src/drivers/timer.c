@@ -34,25 +34,9 @@ static uint32_t Timer_Frequency;
 
 void Timer__Initialize(void)
 {
-	// Disable the timer for programming
-	GTCCR |= (1<<TSM | 1<< PSRSYNC);
-	// Clock source selection
-#if (TIMER_PRESCALER == 1)
-	TCCR0B |= (0  << CS02) | (0 << CS01) | (1 << CS00);
-#elif (TIMER_PRESCALER == 8)
-	TCCR0B |= (0  << CS02) | (1 << CS01) | (0 << CS00);
-#elif (TIMER_PRESCALER == 64)
-	TCCR0B |= (0  << CS02) | (1 << CS01) | (1 << CS00);
-#elif (TIMER_PRESCALER == 256)
-	TCCR0B |= (1  << CS02) | (0 << CS01) | (0 << CS00);
-#elif (TIMER_PRESCALER == 1024)
-	TCCR0B |= (1  << CS02) | (0 << CS01) | (1 << CS00);
-#endif
-
 	// Mode selection
 	// CTC
 	TCCR0A |= (1 << WGM01) | (0 << WGM00);
-	TCCR0B |= (1 << WGM02);
 
 	// Top value for CTC mode
 	OCR0A = TIMER_COMPARE_VALUE;
@@ -62,7 +46,22 @@ void Timer__Initialize(void)
 
 	Timer_Frequency = Micro__GetClockFrequency() >> TIMER_PRESC_SHIFT;
 	Timer_Counter = 0;
+	Timer__Start();
 
-	// Enable the counter
-	GTCCR &= ~(1 << TSM);
+}
+
+void Timer__Start(void)
+{
+    // Clock source selection -- Timer enable
+    #if (TIMER_PRESCALER == 1)
+        TCCR0B |= (0  << CS02) | (0 << CS01) | (1 << CS00);
+    #elif (TIMER_PRESCALER == 8)
+        TCCR0B |= (0  << CS02) | (1 << CS01) | (0 << CS00);
+    #elif (TIMER_PRESCALER == 64)
+        TCCR0B |= (0  << CS02) | (1 << CS01) | (1 << CS00);
+    #elif (TIMER_PRESCALER == 256)
+        TCCR0B |= (1  << CS02) | (0 << CS01) | (0 << CS00);
+    #elif (TIMER_PRESCALER == 1024)
+        TCCR0B |= (1  << CS02) | (0 << CS01) | (1 << CS00);
+    #endif
 }

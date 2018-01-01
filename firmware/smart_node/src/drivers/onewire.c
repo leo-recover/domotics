@@ -27,6 +27,9 @@
 #define DELAY_70_US (70 * TICKS_PER_MICROSECOND)
 #define DELAY_410_US (410 * TICKS_PER_MICROSECOND)
 
+#define TIMER2__START() {TCCR2B |= (0 << CS02) | (1 << CS01) | (0 << CS00);}
+#define TIMER2__STOP() {TCCR2B &= 0b11111000;}
+
 typedef enum {
 	ONEWIRE_IDLE = 0,
 	ONEWIRE_PRESENCE_SAMPLE,
@@ -54,14 +57,12 @@ static uint8_t Remaining_Bits;
 
 void Onewire__Initialize(void)
 {
-	// Disable the timer for programming
-	GTCCR |= (1 << TSM | 1 << PSRASY);
 	// Select CTC mode
-	TCCR2A |= (0 << WGM22) | (1 << WGM21) | (0 << WGM20);
+	TCCR2A |= (1 << WGM21) | (0 << WGM20);
 	// Set compare register to the maximum value
 	OCR2A = 255;
-	// Set the timer prescaler to 8 and enable the counter
-	TCCR2B |= (0 << CS02) | (1 << CS01) | (0 << CS00);
+	// Enable the ISR
+	TIMSK2 |= (1 << OCIE2A);
 
 	Onewire_State = ONEWIRE_IDLE;
 	Last_Sample = ONEWIRE_DATA_NOT_READY;
@@ -164,6 +165,7 @@ ISR(TIMER2_COMPA_vect)
 	{
 		case ONEWIRE_IDLE:
 		{
+		    TIMER2__STOP();
 			break;
 		}
 		case ONEWIRE_PRESENCE_DRIVE_LOW:
@@ -278,7 +280,7 @@ static void StartTimer(uint16_t delay)
 		Remaining_Delay = 0;
 		OCR2A = delay;
 	}
-	// Enable the counter
-	GTCCR &= ~(1 << TSM);
+
+	TIMER2__START();
 }
 

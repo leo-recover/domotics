@@ -26,6 +26,7 @@
 #include "relays.h"
 #include "timer.h"
 #include "main.h"
+#include "onewire.h"
 
 // temporary variable to store register
 uint8_t volatile reg;
@@ -40,14 +41,17 @@ uint16_t temp100 = 0;
 int main(void)
 {
 	/* Initialization routines */
+	Timer__Initialize();
 	Relays__Initialize();
+	Onewire__Initialize();
 	SPIInitMaster();
 	Usart__Initialize();
 	INT0_interrupt_init();
 	Radio__Initialize();
-	Timer__Initialize();
 	TempSensor__Initialize();
+	Micro__EnableInterrupts();
 
+#if 0
 	// Radio Diagnostics
 	// LED blink if we read the correct STATUS
 	if (RF24GetReg(STATUS) == 0x0E)
@@ -61,18 +65,20 @@ int main(void)
 		}
 	}
 	
+#endif
 	// Loads the default configuration data
 	configLoadDefault();
 	
 	// Send STATUS to console -- DEBUG
 	USART__TransmitChar(RF24GetReg(FIFO_STATUS));
-		
 	//! Main loop
 	while(1)
     {
+#if 0
 		// Listens for packets for 1 sec
 		RF24ReceivePayload();
 		RF24ResetIRQ();
+#endif
 		
 		// Temperature conversion
 		config.thermostat.state.tempSign = config.thermostat.state.tempRaw & (0x8000); // test sign (MSb)

@@ -93,6 +93,8 @@ void Relays__Handler(void)
 		{
 			current_state = Relay1_State;
 		}
+		// by default, remains in the current state
+		next_state = current_state;
 
 		switch (current_state)
 		{
@@ -164,16 +166,16 @@ void Relays__Handler(void)
 			{
 				break;
 			}
-
-			if (Current_Relay == RELAY_0)
-			{
-				Relay0_State = next_state;
-			}
-			else
-			{
-				Relay1_State = next_state;
-			}
 		}
+
+		if (Current_Relay == RELAY_0)
+        {
+            Relay0_State = next_state;
+        }
+        else
+        {
+            Relay1_State = next_state;
+        }
 	}
 }
 
