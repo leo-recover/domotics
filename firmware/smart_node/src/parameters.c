@@ -7,7 +7,7 @@
 
 #include <parameters.h>
 
-config_t config;
+PARAM_T config;
 
 void configLoadDefault(void)
 {

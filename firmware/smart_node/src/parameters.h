@@ -39,9 +39,9 @@ typedef union
 {
 	config_thermostat_s thermostat;
 	uint8_t data[sizeof(config_thermostat_s)];  	
-} config_t;
+} PARAM_T;
 
-extern config_t config;
+extern PARAM_T config;
 
 void configLoadDefault(void);
 

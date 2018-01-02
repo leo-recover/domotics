@@ -16,12 +16,13 @@
 
 
 #include "micro.h"
+#include "usart.h"
+#include "spi.h"
 #include <util/delay.h>
 #include "radio.h"
 #include "temp_sensor.h"
-#include "usart.h"
+#include "thermostat.h"
 #include "parameters.h"
-#include "spi.h"
 #include "events.h"
 #include "relays.h"
 #include "timer.h"
@@ -148,10 +149,20 @@ int main(void)
  */
 ISR(TIMER0_COMPA_vect, ISR_NOBLOCK)
 {
-	// Increment the base counter
-	Timer__GetCounter()++;
+    uint8_t prescaler;
 
-	// Execute the tasks
-	TempSensor__Handler();
-	Relays__Handler();
+	// Increment the base counter
+    prescaler = Timer__GetCounter()++;
+
+	// Execute the 1ms tasks
+    TempSensor__Handler();
+    Relays__Handler();
+
+	// Execute the 100ms tasks
+	if (prescaler == 100)
+	{
+	    Timer__ResetCounter();
+	    Thermostat__Handler();
+	}
+
 }
