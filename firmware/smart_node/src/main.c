@@ -14,19 +14,18 @@
  * \author: Leonardo Ricupero
  */ 
 
-#include <avr/io.h>
+
+#include "micro.h"
 #include <util/delay.h>
-#include <avr/interrupt.h>
-#include <radio.h>
-#include <temp_sensor.h>
-#include <usart.h>
+#include "radio.h"
+#include "temp_sensor.h"
+#include "usart.h"
 #include "parameters.h"
 #include "spi.h"
 #include "events.h"
 #include "relays.h"
 #include "timer.h"
 #include "main.h"
-#include "onewire.h"
 
 // temporary variable to store register
 uint8_t volatile reg;
@@ -43,7 +42,6 @@ int main(void)
 	/* Initialization routines */
 	Timer__Initialize();
 	Relays__Initialize();
-	Onewire__Initialize();
 	SPIInitMaster();
 	Usart__Initialize();
 	INT0_interrupt_init();

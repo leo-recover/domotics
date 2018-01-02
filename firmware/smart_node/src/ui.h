@@ -8,7 +8,7 @@
 #ifndef SRC_UI_H_
 #define SRC_UI_H_
 
-#include <avr/io.h>
+#include "micro.h"
 
 #define LED_PORT PORTB
 #define LED_PIN PB0

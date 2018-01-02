@@ -5,7 +5,7 @@
  * @author Leonardo Ricupero
  */
 
-#include <avr/io.h>
+#include "micro.h"
 #include "ui.h"
 
 void Ui__Initialize(void)

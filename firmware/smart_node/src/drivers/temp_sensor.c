@@ -69,6 +69,9 @@ static uint8_t Scratchpad_Read_Index;
 void TempSensor__Initialize(void)
 {
 	uint8_t i;
+
+	Onewire__Initialize();
+
 	TempSensor_State = STATE_INIT;
 	TempSensor_Event = EVENT_NO_EVENT;
 	for (i=0; i<SCRATCHPAD_SIZE; i++)

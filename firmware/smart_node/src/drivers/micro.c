@@ -6,7 +6,7 @@
  *
  */
 
-#include <avr/io.h>
+#include "micro.h"
 
 void Micro__Initialize(void)
 {

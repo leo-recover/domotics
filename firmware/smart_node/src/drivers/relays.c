@@ -6,7 +6,7 @@
  * @author Leonardo Ricupero
  */ 
 
-#include <avr/io.h>
+#include "micro.h"
 #include <avr/interrupt.h>
 #include "relays.h"
 
@@ -59,19 +59,21 @@ void Relays__Initialize(void)
 
 void Relays__Set(RELAY_T relay)
 {
-	cli();
-	Current_Relay = relay;
-	Relays_Event = EVENT_RELAY_SET_REQUESTED;
-	sei();
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        Current_Relay = relay;
+        Relays_Event = EVENT_RELAY_SET_REQUESTED;
+    }
 }
 
 
 void Relays__Reset(RELAY_T relay)
 {
-	cli();
-	Current_Relay = relay;
-	Relays_Event = EVENT_RELAY_RESET_REQUESTED;
-	sei();
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        Current_Relay = relay;
+        Relays_Event = EVENT_RELAY_RESET_REQUESTED;
+    }
 }
 
 void Relays__Handler(void)

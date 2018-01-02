@@ -5,7 +5,6 @@
  * @author Leonardo Ricupero
  */ 
 
-#include <avr/io.h>
 #include "micro.h"
 #include "timer.h"
 

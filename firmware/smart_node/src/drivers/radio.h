@@ -33,8 +33,7 @@
     DEALINGS IN THE SOFTWARE.
 */
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
+#include "micro.h"
 #include <spi.h>
 #include <util/delay.h>
 

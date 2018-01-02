@@ -8,7 +8,9 @@
 #ifndef SRC_DRIVERS_MICRO_H_
 #define SRC_DRIVERS_MICRO_H_
 
+#include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/atomic.h>
 
 // Frequency of the CPU
 #ifndef F_CPU

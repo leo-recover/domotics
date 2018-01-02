@@ -9,8 +9,7 @@
 #ifndef OW_H_
 #define OW_H_
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
+#include "micro.h"
 
 #define ONEWIRE_DRIVE_BUS_LOW() {DDRD |= (1 << DDD7); PORTD &= ~(1 << PORTD7);}
 #define ONEWIRE_RELEASE_BUS() {DDRD &= ~(1 << DDD7);}

@@ -5,6 +5,7 @@
  * @authors Stefan Engelke, Leonardo Ricupero
  */ 
 
+#include "micro.h"
 #include <radio.h>
 
 /**
@@ -128,16 +129,16 @@ uint8_t RF24GetReg(uint8_t reg)
  */
 uint8_t *RF24ReadWrite(uint8_t ReadWrite, uint8_t reg, uint8_t *val, uint8_t nVal)
 {
-	cli();	//disable global interrupt
+    //! A static uint8_t is needed to return an array
+    static uint8_t ret[DATA_LEN];
 
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
 	//! If "W" we want to write to nRF24. No need to "R" mode because R=0x00
 	if (ReadWrite == W)
 	{
 		reg = W_REGISTER + reg;	//ex: reg = EN_AA: 0b0010 0000 + 0b0000 0001 = 0b0010 0001
 	}
-
-	//! A static uint8_t is needed to return an array
-	static uint8_t ret[DATA_LEN];
 
 	//! Makes sure we wait a bit
 	_delay_us(10);
@@ -164,7 +165,7 @@ uint8_t *RF24ReadWrite(uint8_t ReadWrite, uint8_t reg, uint8_t *val, uint8_t nVa
 	}
 	PORTB |= (1 << PORTB2);	//CSN IR_High
 
-	sei(); //enable global interrupt
+    }
 
 	return ret;
 }

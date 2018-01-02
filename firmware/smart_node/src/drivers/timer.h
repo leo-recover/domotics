@@ -9,7 +9,7 @@
 #ifndef TIMER_H_
 #define TIMER_H_
 
-#include <avr/io.h>
+#include "micro.h"
 
 extern uint16_t Timer_Counter;
 

@@ -1,15 +1,15 @@
-/*
- * \file temp_sensor.h
+/**
+ * @file temp_sensor.h
  *
- * \date 22/10/2014 20:50:57
- * \author Leonardo Ricupero
+ * @date 02/01/2018
+ * @author Leonardo Ricupero
  */ 
 
 
 #ifndef TEMP_SENSOR_H_
 #define TEMP_SENSOR_H_
 
-#include <avr/io.h>
+#include "micro.h"
 
 void TempSensor__Initialize(void);
 void TempSensor__Configure(void);

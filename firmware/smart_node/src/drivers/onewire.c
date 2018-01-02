@@ -12,6 +12,7 @@
  * @author Leonardo Ricupero
  */ 
 
+#include "micro.h"
 #include "onewire.h"
 
 // Ticks for a delay of 1 microsecond timer clocked at 2 MHz
@@ -100,30 +101,32 @@ ONEWIRE_SAMPLE_T Onewire__GetPresence(void)
 
 void Onewire__WriteBit(uint8_t bit)
 {
-	cli();
-	if (bit)
-	{
-		Onewire_State = ONEWIRE_WRITE1_DRIVE_LOW;
-		ONEWIRE_DRIVE_BUS_LOW();
-		StartTimer(DELAY_6_US);
-	}
-	else
-	{
-		Onewire_State = ONEWIRE_WRITE0_DRIVE_LOW;
-		ONEWIRE_DRIVE_BUS_LOW();
-		StartTimer(DELAY_60_US);
-	}
-	sei();
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        if (bit)
+        {
+            Onewire_State = ONEWIRE_WRITE1_DRIVE_LOW;
+            ONEWIRE_DRIVE_BUS_LOW();
+            StartTimer(DELAY_6_US);
+        }
+        else
+        {
+            Onewire_State = ONEWIRE_WRITE0_DRIVE_LOW;
+            ONEWIRE_DRIVE_BUS_LOW();
+            StartTimer(DELAY_60_US);
+        }
+    }
 }
 
 
 void Onewire__StartReadBit(void)
 {
-	cli();
-	Onewire_State = ONEWIRE_READBIT_DRIVE_LOW;
-	ONEWIRE_DRIVE_BUS_LOW();
-	StartTimer(DELAY_6_US);
-	sei();
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        Onewire_State = ONEWIRE_READBIT_DRIVE_LOW;
+        ONEWIRE_DRIVE_BUS_LOW();
+        StartTimer(DELAY_6_US);
+    }
 }
 
 void Onewire__WriteByte(uint8_t data)
@@ -158,8 +161,7 @@ uint8_t Onewire__IsIdle(void)
  */
 ISR(TIMER2_COMPA_vect)
 {
-	// Stop the counter
-	GTCCR |= (1 << TSM | 1 << PSRASY);
+	TIMER2__STOP();
 
 	switch(Onewire_State)
 	{
