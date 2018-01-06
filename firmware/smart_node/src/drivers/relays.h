@@ -17,6 +17,6 @@ typedef enum {
 void Relays__Initialize(void);
 void Relays__Set(RELAY_T relay);
 void Relays__Reset(RELAY_T relay);
-void Relays__Handler(void);
+void Relays__1msTask(void);
 
 #endif /* RELAYS_H_ */

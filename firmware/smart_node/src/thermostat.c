@@ -12,24 +12,22 @@
 #include "thermostat.h"
 
 #define THERMOSTAT_SAMPLE_RATE_100MS 50 // 5 seconds
+#define THERMOSTAT_TIMEOUT_100MS 10 // 1 seconds
+
+#define THERMOSTAT_LOAD_ON()  {Relays__Set(RELAY_0); Thermostat_Status.load_active = 1;}
+#define THERMOSTAT_LOAD_OFF() {Relays__Reset(RELAY_0); Thermostat_Status.load_active = 0;}
 
 typedef enum {
-    STATE_INIT = 0,
     STATE_IDLE,
     STATE_WAIT_FOR_TEMPERATURE,
-    STATE_WAIT_FOR_SET,
-    STATE_WAIT_FOR_RESET,
-    STATE_SET,
-    STATE_RESET,
     STATE_ERROR_FOUND,
-} THERMOSTAT_STATE_T;
+} TEMP_READING_STATE_T;
 
-typedef enum {
-    EVENT_NO_EVENT,
-    EVENT_ON_REQUESTED,
-    EVENT_OFF_REQUESTED,
-    EVENT_TIMEOUT_EXPIRED,
-} THERMOSTAT_EVENT_T;
+typedef union {
+    uint8_t temperature_ready :1;
+    uint8_t load_active :1;
+    uint8_t all;
+} THERMOSTAT_STATUS_T;
 
 typedef enum {
     MODE_WINTER,
@@ -37,75 +35,97 @@ typedef enum {
 } THERMOSTAT_MODE_T;
 
 
-static uint8_t Thermostat_Counter;
-static THERMOSTAT_STATE_T Thermostat_State;
-static THERMOSTAT_EVENT_T Thermostat_Event;
+static uint8_t Sample_Counter;
+static uint8_t Timeout_Counter;
+static TEMP_READING_STATE_T Temperature_Reading_State;
+static THERMOSTAT_STATUS_T Thermostat_Status;
 static THERMOSTAT_MODE_T Thermostat_Mode;
 static int16_t Last_Temperature; // Q12.4 format
 
+static inline void TemperatureReadingStateMachine(void);
+
 void Thermostat__Initialize(void)
 {
-    Thermostat_Counter = 0;
-    Thermostat_State = STATE_INIT;
-    Thermostat_Event = EVENT_NO_EVENT;
+    Sample_Counter = 0;
+    Temperature_Reading_State = STATE_IDLE;
+    Thermostat_Status.all = 0;
     Thermostat_Mode = MODE_WINTER;
 
     Last_Temperature = 0xFFFF;
 }
 
-void Thermostat__On(void)
+
+void Thermostat__100msTask(void)
 {
-    if (Thermostat_Event == EVENT_NO_EVENT)
+    TemperatureReadingStateMachine();
+
+    if (Thermostat_Status.temperature_ready)
     {
-        Thermostat_Event = EVENT_ON_REQUESTED;
-    }
-}
+        Thermostat_Status.temperature_ready = 0;
 
-void Thermostat__Off(void)
-{
-    if (Thermostat_Event == EVENT_NO_EVENT)
-    {
-        Thermostat_Event = EVENT_OFF_REQUESTED;
-    }
-}
-
-void Thermostat__Handler(void)
-{
-    THERMOSTAT_STATE_T next_state;
-
-    next_state = Thermostat_State;
-
-    switch (Thermostat_State)
-    {
-        case STATE_INIT:
+        if (Last_Temperature <= THERMOSTAT_TEMPERATURE_SET - THERMOSTAT_TEMPERATURE_HISTERESYS)
         {
-            if (Thermostat_Counter == THERMOSTAT_SAMPLE_RATE_100MS)
+            if (Thermostat_Status.load_active == 0)
             {
-                Thermostat_Counter = 0;
+                THERMOSTAT_LOAD_ON();
+            }
+        }
+        else if (Last_Temperature >= THERMOSTAT_TEMPERATURE_SET)
+        {
+            if (Thermostat_Status.load_active == 1)
+            {
+                THERMOSTAT_LOAD_OFF();
+            }
+        }
+    }
+}
+
+static inline void TemperatureReadingStateMachine(void)
+{
+    TEMP_READING_STATE_T next_state;
+
+    next_state = Temperature_Reading_State;
+
+    if (Sample_Counter < THERMOSTAT_SAMPLE_RATE_100MS)
+    {
+        Sample_Counter++;
+    }
+
+    switch (Temperature_Reading_State)
+    {
+        case STATE_IDLE:
+        {
+            if (Sample_Counter == THERMOSTAT_SAMPLE_RATE_100MS)
+            {
+                Sample_Counter = 0;
                 TempSensor__StartAcquisition();
+                Timeout_Counter = THERMOSTAT_TIMEOUT_100MS;
                 next_state = STATE_WAIT_FOR_TEMPERATURE;
             }
             break;
         }
-        case STATE_IDLE:
-        {
-            break;
-        }
         case STATE_WAIT_FOR_TEMPERATURE:
         {
-            // todo timeout
             if (TempSensor__IsTemperatureReady())
             {
                 Last_Temperature = TempSensor__GetTemperature();
-                if (Thermostat_Mode == MODE_WINTER)
+                Thermostat_Status.temperature_ready = 0;
+                next_state = STATE_IDLE;
+            }
+            else
+            {
+                Timeout_Counter--;
+                if (Timeout_Counter == 0)
                 {
-
-                }
-                else
-                {
-
+                    next_state = STATE_ERROR_FOUND;
                 }
             }
+            break;
+        }
+        case STATE_ERROR_FOUND:
+        {
+            // todo better error handling
+            next_state = STATE_IDLE;
             break;
         }
         default:
@@ -114,5 +134,5 @@ void Thermostat__Handler(void)
         }
     }
 
-    Thermostat_State = next_state;
+    Temperature_Reading_State = next_state;
 }

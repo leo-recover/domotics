@@ -16,7 +16,7 @@ void TempSensor__Configure(void);
 void TempSensor__StartAcquisition(void);
 uint8_t TempSensor__IsTemperatureReady(void);
 int16_t TempSensor__GetTemperature(void);
-void TempSensor__Handler(void);
+void TempSensor__1msTask(void);
 
 
 #endif /* TEMP_SENSOR_H_ */

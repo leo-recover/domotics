@@ -76,7 +76,7 @@ void Relays__Reset(RELAY_T relay)
     }
 }
 
-void Relays__Handler(void)
+void Relays__1msTask(void)
 {
 	RELAYS_STATE_T current_state, next_state;
 

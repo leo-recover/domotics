@@ -121,7 +121,7 @@ uint8_t TempSensor__IsTemperatureReady(void)
 	return result;
 }
 
-void TempSensor__Handler(void)
+void TempSensor__1msTask(void)
 {
 	TEMP_SENSOR_STATE_T next_state;
 	uint8_t temp;

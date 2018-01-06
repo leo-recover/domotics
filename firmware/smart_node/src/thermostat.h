@@ -9,7 +9,7 @@
 #define THERMOSTAT_H_
 
 void Thermostat__Initialize(void);
-void Thermostat__Handler(void);
+void Thermostat__100msTask(void);
 
 
 #endif /* THERMOSTAT_H_ */

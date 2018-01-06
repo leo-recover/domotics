@@ -18,6 +18,9 @@
 #define ON		1
 #define OFF		0
 
+#define THERMOSTAT_TEMPERATURE_SET 400 // 25.0 C deg
+#define THERMOSTAT_TEMPERATURE_HISTERESYS 24 // 1.5 C deg
+
 typedef struct
 {
 	uint8_t		active		: 1;

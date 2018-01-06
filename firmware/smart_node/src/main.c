@@ -78,67 +78,6 @@ int main(void)
 		RF24ReceivePayload();
 		RF24ResetIRQ();
 #endif
-		
-		// Temperature conversion
-		config.thermostat.state.tempSign = config.thermostat.state.tempRaw & (0x8000); // test sign (MSb)
-		if (config.thermostat.state.tempSign)
-		{
-			config.thermostat.state.tempRaw = (config.thermostat.state.tempRaw ^ 0xFFFF) + 1; // 2's complement
-		}
-		config.thermostat.state.temp100 = (6 * config.thermostat.state.tempRaw) + config.thermostat.state.tempRaw / 4; // multiply by (100 * 0.0625) or 6.25
-		if (config.thermostat.state.tempSign)
-		{
-			config.thermostat.state.temp100 = -1 * config.thermostat.state.temp100;
-		}
-		
-		//config.thermostat.state.tempWhole = temp100 / 100;
-		//config.thermostat.state.tempFract = temp100 % 100;
-		
-		// WINTER Thermostat
-		if (config.thermostat.mode == WINTER)
-		{
-			if (config.thermostat.state.temp100 <= (config.thermostat.tempSet100))
-			{
-				if (config.thermostat.state.active == ON) {}
-				else
-				{
-					//relay0Set();
-					config.thermostat.state.active = ON;
-				}
-			}
-			else if (config.thermostat.state.temp100 >= (config.thermostat.tempSet100 + config.thermostat.hist100))
-			{
-				if (config.thermostat.state.active == OFF) {}
-				else
-				{
-					//relay0Reset();
-					config.thermostat.state.active = OFF;
-				}
-			}
-		}
-		
-		// SUMMER Thermostat
-		else if (config.thermostat.mode == SUMMER)
-		{
-			if (config.thermostat.state.temp100 >= (config.thermostat.tempSet100))
-			{
-				if (config.thermostat.state.active == ON) {}
-				else
-				{
-					//relay1Set();
-					config.thermostat.state.active = ON;
-				}
-			}
-			else if (config.thermostat.state.temp100 <= (config.thermostat.tempSet100 - config.thermostat.hist100))
-			{
-				if (config.thermostat.state.active == OFF) {}
-				else
-				{
-					//relay1Reset();
-					config.thermostat.state.active = OFF;
-				}
-			}
-		}
     }
 }
 
@@ -155,14 +94,14 @@ ISR(TIMER0_COMPA_vect, ISR_NOBLOCK)
     prescaler = Timer__GetCounter()++;
 
 	// Execute the 1ms tasks
-    TempSensor__Handler();
-    Relays__Handler();
+    TempSensor__1msTask();
+    Relays__1msTask();
 
 	// Execute the 100ms tasks
 	if (prescaler == 100)
 	{
 	    Timer__ResetCounter();
-	    Thermostat__Handler();
+	    Thermostat__100msTask();
 	}
 
 }
