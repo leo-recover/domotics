@@ -16,16 +16,16 @@
 
 
 #include "micro.h"
+#include "timer.h"
 #include "usart.h"
 #include "spi.h"
-#include <util/delay.h>
 #include "radio.h"
 #include "temp_sensor.h"
 #include "thermostat.h"
 #include "parameters.h"
 #include "events.h"
 #include "relays.h"
-#include "timer.h"
+#include "ui.h"
 #include "main.h"
 
 // temporary variable to store register
@@ -43,6 +43,7 @@ int main(void)
 	/* Initialization routines */
 	Timer__Initialize();
 	Relays__Initialize();
+	Ui__Initialize();
 	SPIInitMaster();
 	Usart__Initialize();
 	INT0_interrupt_init();
@@ -69,7 +70,7 @@ int main(void)
 	configLoadDefault();
 	
 	// Send STATUS to console -- DEBUG
-	USART__TransmitChar(RF24GetReg(FIFO_STATUS));
+	//USART__TransmitChar(RF24GetReg(FIFO_STATUS));
 	//! Main loop
 	while(1)
     {
@@ -102,6 +103,7 @@ ISR(TIMER0_COMPA_vect, ISR_NOBLOCK)
 	{
 	    Timer__ResetCounter();
 	    Thermostat__100msTask();
+	    Ui__100msTask();
 	}
 
 }
