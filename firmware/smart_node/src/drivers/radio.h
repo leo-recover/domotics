@@ -34,7 +34,7 @@
 */
 
 #include "micro.h"
-#include <spi.h>
+#include "spi.h"
 #include <util/delay.h>
 
 /* Memory Map */

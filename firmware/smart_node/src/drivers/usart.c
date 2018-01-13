@@ -6,7 +6,7 @@
  */ 
 
 #include <avr/io.h>
-#include <usart.h>
+#include "usart.h"
 
 #define BAUD_PRESCALE ((F_CPU / (16.0f * USART_BAUDRATE))UL -1)
 

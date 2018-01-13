@@ -6,7 +6,7 @@
  */ 
 
 #include "micro.h"
-#include <radio.h>
+#include "radio.h"
 
 /**
  * \brief Setup the RF24 module

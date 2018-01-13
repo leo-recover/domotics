@@ -5,7 +5,7 @@
  * \author: Leonardo Ricupero
  */ 
 
-#include <adc.h>
+#include "adc.h"
 
 /**
  * \brief Initializes the ADC

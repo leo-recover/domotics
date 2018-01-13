@@ -26,7 +26,7 @@ void Ui__LedBlink500ms(uint8_t times)
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        Blinks_Remaining = times;
+        Blinks_Remaining = (times << 1) + 1;
         Countdown_Timer = UI_BLINK_RATE_500MS;
         Ui__LedOn();
     }
@@ -36,11 +36,11 @@ void Ui__100msTask(void)
 {
     if (Blinks_Remaining != 0)
     {
-        Blinks_Remaining--;
         if (Countdown_Timer == 0)
         {
             Ui__LedToggle();
             Countdown_Timer = UI_BLINK_RATE_500MS;
+            Blinks_Remaining--;
         }
         else
         {
