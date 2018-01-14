@@ -28,57 +28,35 @@
 #include "ui.h"
 #include "main.h"
 
-// temporary variable to store register
-uint8_t volatile reg;
-
-// Temperature conversion variables
-//config.thermostat.state.tempRaw = 0;
-//uint8_t tempSign = 0;
-//uint8_t tempWhole = 0;
-//uint8_t tempFract = 0;
-uint16_t temp100 = 0;
+uint8_t Debug_Cntr1 = 0;
+int16_t Temperature;
 
 int main(void)
 {
 	/* Initialization routines */
-	Timer__Initialize();
-	Relays__Initialize();
+	//Timer__Initialize();
+	//Relays__Initialize();
 	Ui__Initialize();
-	SPIInitMaster();
-	Usart__Initialize();
-	INT0_interrupt_init();
-	Radio__Initialize();
+	//Usart__Initialize();
+	//Radio__Initialize();
 	TempSensor__Initialize();
 	Micro__EnableInterrupts();
 
-#if 0
-	// Radio Diagnostics
-	// LED blink if we read the correct STATUS
-	if (RF24GetReg(STATUS) == 0x0E)
-	{
-		for (uint8_t i = 0; i < 4; i++)
-		{
-			PORTB |= (1 << PB0);
-			_delay_ms(500);
-			PORTB &= ~(1 << PB0);
-			_delay_ms(500);
-		}
-	}
-	
-#endif
-	// Loads the default configuration data
-	configLoadDefault();
-	
-	// Send STATUS to console -- DEBUG
-	//USART__TransmitChar(RF24GetReg(FIFO_STATUS));
+	TempSensor__Configure();
+	Ui__LedBlink500ms(5);
+
+	Temperature = 0;
+		
 	//! Main loop
 	while(1)
     {
-#if 0
-		// Listens for packets for 1 sec
-		RF24ReceivePayload();
-		RF24ResetIRQ();
-#endif
+        TempSensor__1msTask();
+        
+        TempSensor__StartAcquisition();
+        if (TempSensor__IsTemperatureReady())
+        {
+            Temperature = TempSensor__GetTemperature();
+        }
     }
 }
 
@@ -90,19 +68,24 @@ int main(void)
 ISR(TIMER0_COMPA_vect, ISR_NOBLOCK)
 {
     uint8_t prescaler;
-
+    
+    Debug_Cntr1 = TCNT0;
+    
 	// Increment the base counter
     prescaler = Timer__GetCounter()++;
 
 	// Execute the 1ms tasks
-    TempSensor__1msTask();
-    Relays__1msTask();
+    
+    //Relays__1msTask();
+    
 
 	// Execute the 100ms tasks
 	if (prescaler == 100)
 	{
 	    Timer__ResetCounter();
-	    Thermostat__100msTask();
+        // Test code
+	    
+        //Thermostat__100msTask();
 	    Ui__100msTask();
 	}
 

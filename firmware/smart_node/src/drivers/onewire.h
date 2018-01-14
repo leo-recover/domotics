@@ -13,7 +13,7 @@
 
 #define ONEWIRE_DRIVE_BUS_LOW() {DDRD |= (1 << DDD7); PORTD &= ~(1 << PORTD7);}
 #define ONEWIRE_RELEASE_BUS() {DDRD &= ~(1 << DDD7);}
-#define ONEWIRE_SAMPLE_BUS() PIND & (1 << PIND7)
+#define ONEWIRE_SAMPLE_BUS() ((PIND & (1 << PIND7)) >> PIND7)
 
 typedef enum {
 	ONEWIRE_BIT_0 = 0,
@@ -30,7 +30,7 @@ void Onewire__Initialize(void);
 void Onewire__DetectPresence(void);
 ONEWIRE_SAMPLE_T Onewire__GetPresence(void);
 void Onewire__WriteBit(uint8_t bit);
-void Onewire__StartReadBit(void);
+uint8_t Onewire__ReadBit(void);
 void Onewire__WriteByte(uint8_t data);
 void Onewire__StartReadByte(void);
 uint8_t Onewire__IsIdle(void);

@@ -40,7 +40,6 @@ typedef enum {
 	STATE_CONFIG_T_ALARM1,
 	STATE_CONFIG_RESOLUTION,
 	STATE_CONVERT_TEMPERATURE,
-	STATE_POLL_CONVERSION,
 	STATE_READ_SCRATCHPAD,
 	STATE_ACQUIRING_SCRATCHPAD,
 	STATE_ERROR_FOUND,
@@ -109,6 +108,8 @@ void TempSensor__StartAcquisition(void)
  * @details The temperature is given in fixed point
  * 			format Q12.4
  *
+ * @remarks Call this function in order to start a new conversion
+ *
  */
 int16_t TempSensor__GetTemperature(void)
 {
@@ -116,6 +117,7 @@ int16_t TempSensor__GetTemperature(void)
 
 	result = Scratchpad[1] << 8;
 	result += Scratchpad[0];
+	TempSensor_Events.temperature_read = 0;
 	return result;
 }
 
@@ -186,6 +188,7 @@ void TempSensor__1msTask(void)
 				}
 				else if (TempSensor_Events.conversion_finished)
 				{
+				    TempSensor_Events.conversion_finished = 0;
 					Onewire__WriteByte(READ_SCRATCHPAD);
 					next_state = STATE_READ_SCRATCHPAD;
 				}
@@ -198,30 +201,13 @@ void TempSensor__1msTask(void)
 
 			if (Onewire__IsIdle())
 			{
-				Onewire__StartReadBit();
-				next_state = STATE_POLL_CONVERSION;
-			}
-			break;
-		}
-		case STATE_POLL_CONVERSION:
-		{
-			next_state = STATE_POLL_CONVERSION;
-
-			if (Onewire__IsIdle())
-			{
-				temp = Onewire__GetLastSample();
-				if (temp == 1)
+				if (Onewire__ReadBit())
 				{
-					TempSensor_Events.conversion_finished = 1;// = EVENT_CONVERSION_FINISHED;
+				    TempSensor_Events.conversion_finished = 1;// = EVENT_CONVERSION_FINISHED;
                     TempSensor_Events.reading_temp = 0;
                     Onewire__DetectPresence();
-					next_state = STATE_DETECT_PRESENCE;
-				}
-				else
-				{
-					// poll again
-					next_state = STATE_CONVERT_TEMPERATURE;
-				}
+                    next_state = STATE_DETECT_PRESENCE;
+                }
 			}
 			break;
 		}
@@ -251,6 +237,7 @@ void TempSensor__1msTask(void)
 			}
 			else
 			{
+			    Scratchpad_Read_Index = 0;
                 TempSensor_Events.reading_temp = 0;
 				TempSensor_Events.temperature_read = 1;
                 next_state = STATE_IDLE;
