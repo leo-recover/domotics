@@ -220,9 +220,9 @@ ISR(TIMER1_COMPA_vect)
 	    case ONEWIRE_READBIT_RECOVERY:
 	    {
 	        Byte_Read |= (Last_Sample << 7);
-            Byte_Read >>= 1;
 	        if (Remaining_Bits != 0)
             {
+	            Byte_Read >>= 1;
                 Onewire__ReadBit();
                 Remaining_Bits--;
             }
