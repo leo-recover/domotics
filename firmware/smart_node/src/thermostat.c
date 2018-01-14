@@ -24,8 +24,10 @@ typedef enum {
 } TEMP_READING_STATE_T;
 
 typedef union {
-    uint8_t temperature_ready :1;
-    uint8_t load_active :1;
+    struct {
+        uint8_t temperature_ready :1;
+        uint8_t load_active :1;
+    };
     uint8_t all;
 } THERMOSTAT_STATUS_T;
 

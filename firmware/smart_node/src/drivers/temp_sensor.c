@@ -32,8 +32,7 @@
 
 
 typedef enum {
-	STATE_INIT = 0,
-	STATE_IDLE,
+	STATE_IDLE = 0,
 	STATE_DETECT_PRESENCE,
 	STATE_SKIP_ROM,
 	STATE_CONFIG_PRE,
@@ -47,18 +46,23 @@ typedef enum {
 	STATE_ERROR_FOUND,
 } TEMP_SENSOR_STATE_T;
 
-typedef enum {
-	EVENT_NO_EVENT,
-	EVENT_CONFIG_REQUESTED,
-	EVENT_READ_TEMP_REQUESTED,
-	EVENT_CONVERSION_FINISHED,
-	EVENT_TEMPERATURE_READ,
-	EVENT_TIMEOUT_EXPIRED,
-} TEMP_SENSOR_EVENT_T;
+typedef union {
+    struct {
+	    uint8_t configuring :1;
+	    uint8_t reading_temp :1;
+	    uint8_t conversion_finished :1;
+	    uint8_t temperature_read :1;
+	    uint8_t configured: 1;
+	    uint8_t timeout_expired: 1;
+    };
 
+	uint8_t all;
+} TEMP_SENSOR_EVENTS_T;
+
+static uint8_t IsBusy(void);
 
 static TEMP_SENSOR_STATE_T TempSensor_State;
-static TEMP_SENSOR_EVENT_T TempSensor_Event;
+static TEMP_SENSOR_EVENTS_T TempSensor_Events;
 static uint8_t Scratchpad[SCRATCHPAD_SIZE];
 static uint8_t Scratchpad_Read_Index;
 
@@ -72,8 +76,9 @@ void TempSensor__Initialize(void)
 
 	Onewire__Initialize();
 
-	TempSensor_State = STATE_INIT;
-	TempSensor_Event = EVENT_NO_EVENT;
+	TempSensor_State = STATE_IDLE;
+	TempSensor_Events.all = 0;
+	
 	for (i=0; i<SCRATCHPAD_SIZE; i++)
 	{
 		Scratchpad[i] = 0;
@@ -83,15 +88,19 @@ void TempSensor__Initialize(void)
 
 void TempSensor__Configure(void)
 {
-	TempSensor_Event = EVENT_CONFIG_REQUESTED;
+	if (TempSensor_Events.configured != 1)
+	{
+		TempSensor_Events.configuring = 1;	
+	}
 }
 
 void TempSensor__StartAcquisition(void)
 {
-	if (TempSensor_Event == EVENT_NO_EVENT)
-	{
-		TempSensor_Event = EVENT_READ_TEMP_REQUESTED;
-	}
+	if (TempSensor_Events.configured == 1 &&
+        IsBusy() == 0)
+    {
+        TempSensor_Events.reading_temp = 1;
+    }
 }
 
 /**
@@ -113,30 +122,27 @@ int16_t TempSensor__GetTemperature(void)
 uint8_t TempSensor__IsTemperatureReady(void)
 {
 	uint8_t result = 0;
-	if (TempSensor_Event == EVENT_TEMPERATURE_READ)
-	{
-		TempSensor_Event = EVENT_NO_EVENT;
-		result = 1;
-	}
+    if (TempSensor_Events.temperature_read)
+    {
+        TempSensor_Events.temperature_read = 0;
+        result = 1;
+    }
 	return result;
 }
 
 void TempSensor__1msTask(void)
 {
 	TEMP_SENSOR_STATE_T next_state;
+	
+	next_state = TempSensor_State;
 	uint8_t temp;
 	// todo implementation of a timer for timeout
 	switch(TempSensor_State)
 	{
-		case STATE_INIT:
-		{
-			next_state = STATE_IDLE;
-			break;
-		}
 		case STATE_IDLE:
 		{
-			if (TempSensor_Event == EVENT_CONFIG_REQUESTED ||
-				TempSensor_Event == EVENT_READ_TEMP_REQUESTED)
+			if (TempSensor_Events.configuring ||
+				TempSensor_Events.reading_temp)
 			{
 				Onewire__DetectPresence();
 				next_state = STATE_DETECT_PRESENCE;
@@ -168,17 +174,17 @@ void TempSensor__1msTask(void)
 
 			if (Onewire__IsIdle())
 			{
-				if (TempSensor_Event == EVENT_CONFIG_REQUESTED)
+				if (TempSensor_Events.configuring)
 				{
-					Onewire__WriteByte(T_ALARM_HIGH);
-					next_state = STATE_CONFIG_T_ALARM0;
+                    Onewire__WriteByte(WRITE_SCRATCHPAD);
+                    next_state = STATE_CONFIG_PRE;
 				}
-				else if (TempSensor_Event == EVENT_READ_TEMP_REQUESTED)
+				else if (TempSensor_Events.reading_temp)
 				{
 					Onewire__WriteByte(CONVERT_T);
 					next_state = STATE_CONVERT_TEMPERATURE;
 				}
-				else if (TempSensor_Event == EVENT_CONVERSION_FINISHED)
+				else if (TempSensor_Events.conversion_finished)
 				{
 					Onewire__WriteByte(READ_SCRATCHPAD);
 					next_state = STATE_READ_SCRATCHPAD;
@@ -206,7 +212,9 @@ void TempSensor__1msTask(void)
 				temp = Onewire__GetLastSample();
 				if (temp == 1)
 				{
-					TempSensor_Event = EVENT_CONVERSION_FINISHED;
+					TempSensor_Events.conversion_finished = 1;// = EVENT_CONVERSION_FINISHED;
+                    TempSensor_Events.reading_temp = 0;
+                    Onewire__DetectPresence();
 					next_state = STATE_DETECT_PRESENCE;
 				}
 				else
@@ -243,11 +251,21 @@ void TempSensor__1msTask(void)
 			}
 			else
 			{
-				TempSensor_Event = EVENT_TEMPERATURE_READ;
-				next_state = STATE_IDLE;
+                TempSensor_Events.reading_temp = 0;
+				TempSensor_Events.temperature_read = 1;
+                next_state = STATE_IDLE;
 			}
 			break;
 		}
+        case STATE_CONFIG_PRE:
+        {
+            if (Onewire__IsIdle())
+            {
+                Onewire__WriteByte(T_ALARM_HIGH);
+                next_state = STATE_CONFIG_T_ALARM0;
+            }
+            break;
+        }
 		case STATE_CONFIG_T_ALARM0:
 		{
 			next_state = STATE_CONFIG_T_ALARM0;
@@ -276,8 +294,9 @@ void TempSensor__1msTask(void)
 
 			if (Onewire__IsIdle())
 			{
-				next_state = STATE_IDLE;
-				TempSensor_Event = EVENT_NO_EVENT;
+                TempSensor_Events.configuring = 0;
+				TempSensor_Events.configured = 1;
+                next_state = STATE_IDLE;
 			}
 			break;
 		}
@@ -290,3 +309,16 @@ void TempSensor__1msTask(void)
 	TempSensor_State = next_state;
 }
 
+static uint8_t IsBusy(void)
+{
+    if (TempSensor_Events.configuring == 0 && 
+        TempSensor_Events.conversion_finished == 0 &&
+        TempSensor_Events.reading_temp == 0)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
