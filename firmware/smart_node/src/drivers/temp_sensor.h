@@ -11,6 +11,8 @@
 
 #include "micro.h"
 
+#define REAL_TO_FIXED_TEMPERATURE(val) (int16_t)(val * 16.0f)
+
 void TempSensor__Initialize(void);
 void TempSensor__Configure(void);
 void TempSensor__StartAcquisition(void);

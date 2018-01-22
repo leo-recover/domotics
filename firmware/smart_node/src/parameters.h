@@ -9,7 +9,8 @@
 #ifndef CONFIGURATION_H_
 #define CONFIGURATION_H_
 
-#include <avr/io.h>
+#include "micro.h"
+#include "temp_sensor.h"
 
 #define SUMMER	0
 #define WINTER	1
@@ -18,8 +19,8 @@
 #define ON		1
 #define OFF		0
 
-#define THERMOSTAT_TEMPERATURE_SET 400 // 25.0 C deg
-#define THERMOSTAT_TEMPERATURE_HISTERESYS 24 // 1.5 C deg
+#define THERMOSTAT_TEMPERATURE_SET          REAL_TO_FIXED_TEMPERATURE(25.0f)
+#define THERMOSTAT_TEMPERATURE_HISTERESYS   REAL_TO_FIXED_TEMPERATURE(1.5f)
 
 typedef struct
 {

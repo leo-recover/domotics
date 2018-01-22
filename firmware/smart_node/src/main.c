@@ -28,35 +28,22 @@
 #include "ui.h"
 #include "main.h"
 
-uint8_t Debug_Cntr1 = 0;
-int16_t Temperature;
-
 int main(void)
 {
-	/* Initialization routines */
-	//Timer__Initialize();
-	//Relays__Initialize();
+	// Initialization routines
+	Timer__Initialize();
+	Relays__Initialize();
 	Ui__Initialize();
-	//Usart__Initialize();
-	//Radio__Initialize();
 	TempSensor__Initialize();
+	Thermostat__Initialize();
 	Micro__EnableInterrupts();
 
-	TempSensor__Configure();
 	Ui__LedBlink500ms(5);
 
-	Temperature = 0;
-		
 	//! Main loop
 	while(1)
     {
-        TempSensor__1msTask();
-        
-        TempSensor__StartAcquisition();
-        if (TempSensor__IsTemperatureReady())
-        {
-            Temperature = TempSensor__GetTemperature();
-        }
+
     }
 }
 
@@ -69,23 +56,18 @@ ISR(TIMER0_COMPA_vect, ISR_NOBLOCK)
 {
     uint8_t prescaler;
     
-    Debug_Cntr1 = TCNT0;
-    
 	// Increment the base counter
     prescaler = Timer__GetCounter()++;
 
 	// Execute the 1ms tasks
+    TempSensor__1msTask();
+    Relays__1msTask();
     
-    //Relays__1msTask();
-    
-
 	// Execute the 100ms tasks
 	if (prescaler == 100)
 	{
 	    Timer__ResetCounter();
-        // Test code
-	    
-        //Thermostat__100msTask();
+        Thermostat__100msTask();
 	    Ui__100msTask();
 	}
 

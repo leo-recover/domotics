@@ -54,6 +54,7 @@ void Thermostat__Initialize(void)
     Thermostat_Mode = MODE_WINTER;
 
     Last_Temperature = 0xFFFF;
+    TempSensor__Configure();
 }
 
 
@@ -111,7 +112,7 @@ static inline void TemperatureReadingStateMachine(void)
             if (TempSensor__IsTemperatureReady())
             {
                 Last_Temperature = TempSensor__GetTemperature();
-                Thermostat_Status.temperature_ready = 0;
+                Thermostat_Status.temperature_ready = 1;
                 next_state = STATE_IDLE;
             }
             else
