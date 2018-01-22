@@ -112,8 +112,8 @@ void Relays__1msTask(void)
 			{
 				if (Countdown_Timer_Ms == 0)
 				{
-					EndMovePinForSet(RELAY_0);
-					EndMovePinForSet(RELAY_1);
+					EndMovePinForReset(RELAY_0);
+					EndMovePinForReset(RELAY_1);
 					next_state = STATE_RESET;
 				}
 				break;
