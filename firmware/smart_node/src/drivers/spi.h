@@ -11,8 +11,12 @@
 
 #include <avr/io.h>
 
-void SPIInitMaster(void);
-char SPIWriteByte(char cData);
-
+void Spi__Initialize(void);
+void Spi__PutChar(uint8_t c);
+uint8_t Spi__GetChar(void);
+void Spi__WriteThenRead(uint8_t c);
+BOOL_T Spi__IsRxBufferEmpty(void);
+BOOL_T Spi__IsTxBufferEmpty(void);
+void Spi__FastTask(void);
 
 #endif /* SPI_H_ */

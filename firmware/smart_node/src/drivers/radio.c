@@ -19,6 +19,8 @@
 void Radio__Initialize(void)
 {
 	uint8_t val[5];
+	// Set CE low to start with, because nothing has to be transmitted
+    PORTB &= ~(1<<PORTB1);
 	
 	// EN_AA - (enable auto-acknowledgments)
 	// Transmitter gets automatic response from receiver in case of successful transmission
@@ -109,9 +111,10 @@ uint8_t RF24GetReg(uint8_t reg)
 	_delay_us(10);
 	PORTB &= ~(1 << PORTB2);	// CSN low
 	_delay_us(10);
-	SPIWriteByte(R_REGISTER + reg);	// R_REGISTER = set the RF24 to reading mode, "reg" is the register that will be read back
+	Spi__PutChar(R_REGISTER + reg);	// R_REGISTER = set the RF24 to reading mode, "reg" is the register that will be read back
 	_delay_us(10);
-	reg = SPIWriteByte(NOP);	// Send a NOP (dummy byte) in order to read the first byte of the register "reg"
+	Spi__WriteThenRead(NOP); // Send a NOP (dummy byte) in order to read the first byte of the register "reg"
+	reg = Spi__GetChar();
 	_delay_us(10);
 	PORTB |= (1 << PORTB2); //CSN IR_High
 	return reg;	// Return the read register
@@ -144,7 +147,7 @@ uint8_t *RF24ReadWrite(uint8_t ReadWrite, uint8_t reg, uint8_t *val, uint8_t nVa
 	_delay_us(10);
 	PORTB &= ~(1 << PORTB2);	// CSN low
 	_delay_us(10);
-	SPIWriteByte(reg);	// set to write or read mode the register "reg"
+	Spi__PutChar(reg);	// set to write or read mode the register "reg"
 	_delay_us(10);
 
 	int i;
@@ -154,12 +157,13 @@ uint8_t *RF24ReadWrite(uint8_t ReadWrite, uint8_t reg, uint8_t *val, uint8_t nVa
 		if (ReadWrite == R && reg != W_TX_PAYLOAD)
 		{
 			// Send dummy bytes to read the data
-			ret[i] = SPIWriteByte(NOP);
+		    Spi__WriteThenRead(NOP);
+			ret[i] = Spi__GetChar();
 			_delay_us(10);
 		}
 		else
 		{
-			SPIWriteByte(val[i]);
+		    Spi__PutChar(val[i]);
 			_delay_us(10);
 		}
 	}
@@ -226,10 +230,10 @@ void RF24ResetIRQ(void)
 	PORTB &= ~(1 << PORTB2);
 	_delay_us(10);
 	// Write to STATUS register
-	SPIWriteByte(W_REGISTER + STATUS);
+	Spi__PutChar(W_REGISTER + STATUS);
 	_delay_us(10);
 	// Reset all IRQ in STATUS register
-	SPIWriteByte(0x70);
+	Spi__PutChar(0x70);
 	_delay_us(10);
 	// CSN high
 	PORTB |= (1 << PORTB2);
