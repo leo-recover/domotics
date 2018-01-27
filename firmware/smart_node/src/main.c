@@ -32,6 +32,7 @@ int main(void)
 {
 	// Initialization routines
 	Timer__Initialize();
+	Usart__Initialize();
 	Relays__Initialize();
 	Ui__Initialize();
 	TempSensor__Initialize();
@@ -40,7 +41,7 @@ int main(void)
 
 	Ui__LedBlink500ms(5);
 
-	//! Main loop
+	// Endless loop
 	while(1)
     {
 

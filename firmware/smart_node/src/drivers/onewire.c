@@ -13,7 +13,6 @@
  */ 
 
 #include "micro.h"
-#include <util/delay_basic.h>
 #include "onewire.h"
 
 // Ticks for a delay of 1 microsecond timer clocked at 2 MHz
@@ -54,7 +53,7 @@
 #define TIMER1__SET_DELAY(delay) {OCR1A = delay;}
 #define TIMER1__TRIGGER_DELAY(delay) {TIMER1__RESET_COUNTER(); TIMER1__SET_DELAY(delay); TIMER1__START();}
 
-#define DELAY_BLOCKING(x) _delay_loop_2(x << 1)
+#define DELAY_BLOCKING(x) Micro__WaitFourClockCycles(x << 1)
 
 typedef enum {
 	ONEWIRE_IDLE = 0,

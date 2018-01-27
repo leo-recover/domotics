@@ -13,7 +13,10 @@
 
 #define USART_BAUDRATE 9600
 
-void USART__TransmitChar(char c);
 void Usart__Initialize(void);
+uint8_t Usart__GetChar(void);
+void Usart__PutChar(uint8_t c);
+BOOL_T Usart__IsRxBufferEmpty(void);
+BOOL_T Usart__IsTxBufferEmpty(void);
 
 #endif /* USART_H_ */
