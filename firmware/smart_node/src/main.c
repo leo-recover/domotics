@@ -44,7 +44,7 @@ int main(void)
 	// Endless loop
 	while(1)
     {
-
+	    Usart__FastTask();
     }
 }
 

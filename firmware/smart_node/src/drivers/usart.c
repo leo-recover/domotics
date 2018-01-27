@@ -37,7 +37,7 @@ void Usart__Initialize(void)
 
 	// Interrupts enable - RX and data empty
 	UCSR0B = 0;
-	UCSR0B |= (1 << RXCIE0) | (1 << UDRIE0);
+	UCSR0B |= (1 << RXCIE0);
 
 	// Enable transmitter and receiver
     UCSR0B |= (1 << RXEN0) | (1 << TXEN0);
@@ -107,11 +107,14 @@ ISR(USART_RX_vect)
     }
 }
 
-ISR(USART_UDRE_vect)
+void Usart__FastTask(void)
 {
     if (Tx_Idx > 0)
     {
-        Tx_Idx--;
-        UDR0 = Tx_Buffer[Tx_Idx];
+        if ((UCSR0A & (1<<UDRE0)) == 1)
+        {
+            Tx_Idx--;
+            UDR0 = Tx_Buffer[Tx_Idx];
+        }
     }
 }

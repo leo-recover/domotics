@@ -18,5 +18,6 @@ uint8_t Usart__GetChar(void);
 void Usart__PutChar(uint8_t c);
 BOOL_T Usart__IsRxBufferEmpty(void);
 BOOL_T Usart__IsTxBufferEmpty(void);
+void Usart__FastTask(void);
 
 #endif /* USART_H_ */
