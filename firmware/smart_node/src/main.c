@@ -23,7 +23,6 @@
 #include "temp_sensor.h"
 #include "thermostat.h"
 #include "parameters.h"
-#include "events.h"
 #include "relays.h"
 #include "ui.h"
 #include "main.h"
