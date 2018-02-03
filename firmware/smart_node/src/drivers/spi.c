@@ -19,6 +19,9 @@
 #define TX_BUFFER_SIZE 16
 #define RX_BUFFER_SIZE 16
 
+#define SPI_DRIVE_CSN_LOW() {PORT_SPI &= ~(1 << PIN_CSN);}
+#define SPI_DRIVE_CSN_HIGH() {PORT_SPI |= (1 << PIN_CSN);}
+
 static uint8_t Tx_Buffer[TX_BUFFER_SIZE];
 static uint8_t Rx_Buffer[RX_BUFFER_SIZE];
 static uint8_t Tx_Idx;
@@ -38,7 +41,7 @@ void Spi__Initialize(void)
 	// Enable SPI, Master, set clock rate fck/16, IRQ enabled
 	SPCR = (1 << SPE) | (1 << MSTR) | (1 << SPR0) | (1 << SPIE);
 	// Set CSN high to start with, because nothing has to be transmitted
-	PORT_SPI |= 1 << PIN_CSN;
+	SPI_DRIVE_CSN_HIGH();
 
 	// Buffers initialization
     Tx_Idx = 0;
@@ -107,6 +110,7 @@ void Spi__FastTask(void)
         if (!Pending_Write)
         {
             Tx_Idx--;
+            SPI_DRIVE_CSN_LOW();
             SPDR = Tx_Buffer[Tx_Idx];
             Pending_Write = TRUE;
         }
@@ -129,4 +133,5 @@ ISR(SPI_STC_vect)
         Pending_Read = FALSE;
     }
     Pending_Write = FALSE;
+    SPI_DRIVE_CSN_HIGH();
 }
