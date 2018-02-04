@@ -149,6 +149,7 @@
 uint8_t RF24GetReg(uint8_t reg);
 uint8_t *RF24ReadWrite(uint8_t ReadWrite, uint8_t reg, uint8_t *val, uint8_t nVal);
 void Radio__Initialize(void);
+void Radio__1msTask(void);
 void RF24TransmitPayload(uint8_t *WBuff);
 void RF24ReceivePayload(void);
 void RF24ResetIRQ(void);

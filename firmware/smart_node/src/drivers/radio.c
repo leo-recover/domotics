@@ -7,6 +7,7 @@
 
 #include "micro.h"
 #include "usart.h"
+#include "spi.h"
 #include "radio.h"
 
 #define DEFAULT_ADDRESS_SIZE 5
@@ -15,9 +16,30 @@
 #define RADIO_DRIVE_CE_LOW()  {PORTB &= ~(1<<PORTB1);}
 #define RADIO_DRIVE_CE_HIGH() {PORTB |= (1<<PORTB1);}
 
+typedef enum {
+    STATE_IDLE = 0,
+    STATE_READING,
+    STATE_ERROR_FOUND,
+} RADIO_STATE_T;
+
+typedef union {
+    struct {
+        uint8_t on :1;
+        uint8_t transmitting :1;
+        uint8_t receiving :1;
+        uint8_t rx_complete :1;
+    };
+
+    uint8_t all;
+} RADIO_EVENTS_T;
+
+static RADIO_STATE_T Radio_State;
+static RADIO_EVENTS_T Radio_Events;
+
 static uint8_t Node_Address[DEFAULT_ADDRESS_SIZE] = DEFAULT_NODE_ADDRESS;
 
 static void WriteRegister(uint8_t reg, uint8_t value);
+static void InitializeIRQ(void);
 
 uint8_t* data;
 
@@ -91,16 +113,18 @@ void Radio__Initialize(void)
 	val = (0 << BIT_PRIM_RX) | (0 << BIT_PWR_UP) | (1 << BIT_MASK_MAX_RT);
 	WriteRegister(REG_CONFIG, &val, 1);
 	
+	InitializeIRQ();
+
+	Radio_State = STATE_IDLE;
+	Radio_Events.all = 0;
+
 	//device need 1.5ms to reach standby mode
 	_delay_ms(100);
+}
 
-	// INT0 init
-	DDRD &= ~(1 << DDD2);
-    // INT0 falling edge PD2
-    EICRA |=  (1<<ISC01);
-    EICRA  &=  ~(1<<ISC00);
-    // Enable IRQ INT0
-    EIMSK |=  (1<<INT0);
+void Radio__1msTask(void)
+{
+
 }
 
 /**
@@ -240,6 +264,17 @@ static void WriteRegister(uint8_t reg, uint8_t* val, uint8_t n_val)
     {
         Spi__PutChar(val[i]);
     }
+}
+
+static void InitializeIRQ(void)
+{
+    // INT0 init
+    DDRD &= ~(1 << DDD2);
+    // INT0 falling edge PD2
+    EICRA |=  (1<<ISC01);
+    EICRA  &=  ~(1<<ISC00);
+    // Enable IRQ INT0
+    EIMSK |=  (1<<INT0);
 }
 
 /**
