@@ -13,17 +13,22 @@
 #define DEFAULT_ADDRESS_SIZE 5
 #define DEFAULT_NODE_ADDRESS {0x00, 0x01, 0x02, 0x03, 0x04}
 
+#define DELAY_TPD2STBY 5 // milliseconds
+
 #define RADIO_DRIVE_CE_LOW()  {PORTB &= ~(1<<PORTB1);}
 #define RADIO_DRIVE_CE_HIGH() {PORTB |= (1<<PORTB1);}
 
 typedef enum {
-    STATE_IDLE = 0,
+    STATE_INIT = 0,
+    STATE_IDLE,
     STATE_READING,
+    STATE_CONFIGURING,
     STATE_ERROR_FOUND,
 } RADIO_STATE_T;
 
 typedef union {
     struct {
+        uint8_t turning_on: 1;
         uint8_t on :1;
         uint8_t transmitting :1;
         uint8_t receiving :1;
@@ -115,15 +120,83 @@ void Radio__Initialize(void)
 	
 	InitializeIRQ();
 
-	Radio_State = STATE_IDLE;
+	Radio_State = STATE_INIT;
 	Radio_Events.all = 0;
+}
 
-	//device need 1.5ms to reach standby mode
-	_delay_ms(100);
+void Radio__TurnOn(void)
+{
+    uint8_t val;
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        // fixme read config first
+        val = (1 << BIT_PWR_UP);
+        WriteRegister(REG_CONFIG, &val, 1);
+        Radio_Events.turning_on = 1;
+    }
+}
+
+void Radio__TurnOff(void)
+{
+    uint8_t val;
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        // fixme read config first
+        val = (0 << BIT_PWR_UP);
+        WriteRegister(REG_CONFIG, &val, 1);
+        Radio_Events.on = 0;
+    }
 }
 
 void Radio__1msTask(void)
 {
+    static down_counter = 0;
+    RADIO_STATE_T next_state = Radio_State;
+
+    switch (Radio_State)
+    {
+        case STATE_INIT:
+        {
+            if (Spi__IsTxBufferEmpty())
+            {
+                next_state = STATE_IDLE;
+            }
+            break;
+        }
+        case STATE_IDLE:
+        {
+            if (Radio_Events.turning_on)
+            {
+                down_counter = DELAY_TPD2STBY;
+                next_state = STATE_CONFIGURING;
+            }
+            break;
+        }
+        case STATE_CONFIGURING:
+        {
+            down_counter--;
+            if (down_counter == 0)
+            {
+                if (Radio_Events.turning_on)
+                {
+                    Radio_Events.turning_on = 0;
+                    Radio_Events.on = 1;
+                    next_state = STATE_IDLE;
+                }
+            }
+            break;
+        }
+        case STATE_READING:
+        {
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
+
+    Radio_State = next_state;
 
 }
 
